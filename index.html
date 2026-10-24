@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบคัดกรองและประเมินภาวะพึ่งพิง (Barthel ADL Index) & LTC (Shared Central Cloud DB)</title>
+    <title>ระบบคัดกรองและประเมินภาวะพึ่งพิง (Barthel ADL Index) & LTC</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -43,7 +43,7 @@
                 </div>
                 <div>
                     <h1 class="text-base sm:text-xl font-extrabold tracking-wide">LTC & Barthel ADL (ฐานข้อมูลกลาง)</h1>
-                    <p class="text-xs text-emerald-200 hidden sm:block">บันทึกข้อมูลแล้วซิงค์ลง Google Sheets กลางอัตโนมัติ</p>
+                    <p class="text-xs text-emerald-200 hidden sm:block">บันทึก แก้ไข ลบ ข้อมูลซิงค์ลง Google Sheets กลางอัตโนมัติ</p>
                 </div>
             </div>
             <div class="flex items-center space-x-1 sm:space-x-2">
@@ -55,9 +55,6 @@
                 </button>
                 <button type="button" onclick="switchTab('records')" id="btn-tab-records" class="px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/10 text-emerald-100 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-database"></i> <span class="hidden md:inline">ฐานข้อมูลรวม</span> (<span id="record-count-badge">0</span>)
-                </button>
-                <button type="button" onclick="openMasterReportModal()" class="px-3 py-2 rounded-xl text-sm font-bold bg-teal-600 hover:bg-teal-700 text-white shadow flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-print"></i> <span class="hidden md:inline">พิมพ์รายงาน</span>
                 </button>
             </div>
         </div>
@@ -81,7 +78,7 @@
                     <span class="bg-white/20 text-emerald-100 text-xs px-3.5 py-1 rounded-full uppercase tracking-wider font-bold">ระบบฐานข้อมูลกลาง Google Sheets</span>
                     <h2 class="text-xl sm:text-3xl font-extrabold">ระบบประเมินดัชนีบาร์เธลเอดีแอล (Barthel ADL)</h2>
                     <p class="text-emerald-100 text-xs sm:text-base max-w-2xl font-medium leading-relaxed">
-                        เจ้าหน้าที่ อสม. ทุกคนที่เปิดลิงก์นี้ ข้อมูลการประเมินจะถูกส่งไปรวมใน Google Sheets เดียวกันโดยอัตโนมัติ
+                        เจ้าหน้าที่ อสม. ทุกคนที่เปิดลิงก์นี้ สามารถประเมิน แก้ไข และลบข้อมูลเพื่อจัดการระบบได้อย่างสะดวกเรียลไทม์
                     </p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -167,10 +164,13 @@
             <div class="bg-white p-4 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center pb-5 border-b gap-3">
                     <div>
-                        <span class="bg-emerald-100 text-emerald-900 text-xs px-3 py-1 rounded-full font-extrabold">แบบประเมินมาตรฐาน</span>
-                        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">แบบประเมินดัชนีบาร์เธลเอดีแอล (Barthel ADL Index)</h2>
+                        <span id="form-mode-badge" class="bg-emerald-100 text-emerald-900 text-xs px-3 py-1 rounded-full font-extrabold">แบบประเมินมาตรฐาน</span>
+                        <h2 id="form-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">แบบประเมินดัชนีบาร์เธลเอดีแอล (Barthel ADL Index)</h2>
                     </div>
-                    <button type="button" onclick="loadSampleData()" class="bg-amber-100 text-amber-900 px-3 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles"></i> เติมตัวอย่าง</button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="resetForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold cursor-pointer"><i class="fa-solid fa-rotate-right"></i> ล้างฟอร์ม</button>
+                        <button type="button" onclick="loadSampleData()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-2 rounded-xl text-xs font-bold cursor-pointer"><i class="fa-solid fa-wand-magic-sparkles"></i> เติมตัวอย่าง</button>
+                    </div>
                 </div>
 
                 <form id="adl-form" onsubmit="saveAssessment(event)" class="mt-6 space-y-6">
@@ -226,7 +226,6 @@
 
                         <!-- 10 Questions Grid -->
                         <div class="space-y-4" id="adl-items-container">
-                            <!-- Items 1-10 -->
                             <script>
                                 const questions = [
                                     { id: 1, title: "1. การรับประทานอาหาร (Feeding)", options: [{v:0, t:"ตักอาหารเข้าปากเองไม่ได้ ต้องมีคนป้อนให้ (0 คะแนน)"}, {v:5, t:"ตักกินเองได้ แต่ต้องมีคนช่วยตัดหรือเตรียมให้ (5 คะแนน)"}, {v:10, t:"กินอาหารเองได้ปกติ (10 คะแนน)"}] },
@@ -272,7 +271,7 @@
                     <!-- Submit Buttons -->
                     <div class="flex justify-end gap-3 pt-4 border-t">
                         <button type="submit" id="submit-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white px-7 py-3 rounded-xl text-base font-extrabold shadow-lg transition flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกข้อมูลขึ้น Google Sheets กลาง
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span id="submit-btn-text">บันทึกข้อมูลขึ้น Google Sheets กลาง</span>
                         </button>
                     </div>
                 </form>
@@ -290,20 +289,9 @@
                         <p class="text-xs text-slate-500">ดึงข้อมูลทั้งหมดจาก Google Sheets มาแสดงผลเรียลไทม์</p>
                     </div>
                     <div class="flex gap-2">
-                        <button type="button" onclick="fetchCentralRecords(true)" class="bg-cyan-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer">
+                        <button type="button" onclick="fetchCentralRecords(true)" class="bg-cyan-700 hover:bg-cyan-800 text-white px-4 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer">
                             <i class="fa-solid fa-rotate"></i> โหลดข้อมูลล่าสุด
                         </button>
-                    </div>
-                </div>
-
-                <!-- Web App URL Config Box -->
-                <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-2">
-                    <div class="text-xs font-bold text-amber-900 flex items-center gap-2">
-                        <i class="fa-solid fa-link text-amber-600"></i> ตั้งค่า Google Script Web App URL (ฐานข้อมูลกลาง)
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="gas-url-input" placeholder="วาง Web App URL ที่ลงท้ายด้วย /exec ตรงนี้..." class="w-full px-3 py-2 text-xs rounded-xl border border-amber-300 bg-white">
-                        <button type="button" onclick="saveGASUrl()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer">บันทึก URL</button>
                     </div>
                 </div>
 
@@ -328,7 +316,7 @@
                                 <th class="py-3 px-3">ผู้ประเมิน / พื้นที่</th>
                                 <th class="py-3 px-3 text-center">ADL</th>
                                 <th class="py-3 px-3 text-center">กลุ่ม LTC</th>
-                                <th class="py-3 px-3 text-right">พิมพ์</th>
+                                <th class="py-3 px-3 text-center">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="records-tbody" class="divide-y divide-slate-200 bg-white"></tbody>
@@ -344,8 +332,8 @@
             <div class="bg-slate-900 text-white p-4 flex justify-between items-center no-print">
                 <h3 class="font-bold text-sm">พิมพ์รายงานผลการประเมิน</h3>
                 <div class="flex gap-2">
-                    <button type="button" onclick="window.print()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">สั่งพิมพ์ / เซฟ PDF</button>
-                    <button type="button" onclick="closePrintModal()" class="bg-slate-700 text-white px-3 py-1.5 rounded-xl text-xs">ปิด</button>
+                    <button type="button" onclick="window.print()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer">สั่งพิมพ์ / เซฟ PDF</button>
+                    <button type="button" onclick="closePrintModal()" class="bg-slate-700 text-white px-3 py-1.5 rounded-xl text-xs cursor-pointer">ปิด</button>
                 </div>
             </div>
             <div class="p-6 overflow-y-auto bg-white print-container" id="printableArea"></div>
@@ -354,32 +342,17 @@
 
     <!-- Application Script -->
     <script>
-        // =========================================================
-        // 📌 คำแนะนำ: หากไม่อยากให้ อสม. ต้องมากดวาง URL เอง
-        // คุณสามารถนำ Web App URL ของคุณมาวางใส่ในเครื่องหมายคำพูดด้านล่างนี้ได้เลยครับ
-        // =========================================================
-        let DEFAULT_GAS_URL = "วาง_WEB_APP_URL_ของคุณตรงนี้"; 
-
-        let gasUrl = localStorage.getItem('ltc_gas_url') || (DEFAULT_GAS_URL.includes("exec") ? DEFAULT_GAS_URL : "");
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwILVBOeIwdHFYT_BihGnkB89NZRahkp0uhOAHYFKlXv25dJuJVt1qDTZiCZqpQE79Wlg/exec";
         let records = [];
         let pieChartInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('assessment-date').value = today;
-            document.getElementById('gas-url-input').value = gasUrl;
 
             initPieChart();
             fetchCentralRecords(false);
         });
-
-        function saveGASUrl() {
-            const val = document.getElementById('gas-url-input').value.trim();
-            gasUrl = val;
-            localStorage.setItem('ltc_gas_url', gasUrl);
-            showToast("บันทึก URL ฐานข้อมูลกลางเรียบร้อยแล้ว", "success");
-            fetchCentralRecords(true);
-        }
 
         function showToast(msg, type='success') {
             const toast = document.getElementById('toast');
@@ -397,16 +370,8 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 100% Reliable JSONP Fetcher for Google Apps Script
         function fetchCentralRecords(notify = false) {
-            if(!gasUrl) {
-                try { records = JSON.parse(localStorage.getItem('ltc_records_cache') || '[]'); } catch(e){}
-                updateDashboard();
-                renderRecordsTable();
-                if(notify) showToast("ยังไม่ได้ใส่ Web App URL ฐานข้อมูลกลาง", "error");
-                return;
-            }
-
+            if(!gasUrl) return;
             if(notify) showToast("กำลังดึงข้อมูลจาก Google Sheets...", "success");
 
             const script = document.createElement('script');
@@ -414,7 +379,9 @@
             
             window[callbackName] = function(data) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if(document.body.contains(script)) {
+                    document.body.removeChild(script);
+                }
                 if(Array.isArray(data)) {
                     records = data;
                     localStorage.setItem('ltc_records_cache', JSON.stringify(records));
@@ -427,7 +394,9 @@
             script.src = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'callback=' + callbackName;
             script.onerror = function() {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if(document.body.contains(script)) {
+                    document.body.removeChild(script);
+                }
                 try { records = JSON.parse(localStorage.getItem('ltc_records_cache') || '[]'); } catch(e){}
                 updateDashboard();
                 renderRecordsTable();
@@ -489,7 +458,10 @@
                 total += val;
             }
 
+            const isEdit = !!document.getElementById('edit-id').value;
+
             const recordData = {
+                action: 'save',
                 id: document.getElementById('edit-id').value || 'LTC-' + Date.now(),
                 staffName: document.getElementById('staff-name').value,
                 staffArea: document.getElementById('staff-area').value,
@@ -505,33 +477,121 @@
 
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่งข้อมูลเข้า Google Sheets...';
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
 
-            if(gasUrl) {
-                // Post via form-urlencoded to bypass CORS completely
-                const formData = new URLSearchParams();
-                for(let key in recordData) { formData.append(key, recordData[key]); }
-
-                fetch(gasUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData.toString()
-                }).then(() => {
-                    showToast("บันทึกข้อมูลเข้า Google Sheets กลางเรียบร้อย!", "success");
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> บันทึกข้อมูลขึ้น Google Sheets กลาง';
-                    resetForm();
-                    switchTab('records');
-                    setTimeout(() => fetchCentralRecords(false), 1500);
-                }).catch(() => {
-                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
-                    submitBtn.disabled = false;
-                });
-            } else {
-                showToast("กรุณาตั้งค่า Web App URL ก่อนใช้งาน", "error");
-                submitBtn.disabled = false;
+            let iframe = document.getElementById('hidden_submit_iframe');
+            if(!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'hidden_submit_iframe';
+                iframe.name = 'hidden_submit_iframe';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
             }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = gasUrl;
+            form.target = 'hidden_submit_iframe';
+
+            for (let key in recordData) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = recordData[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            setTimeout(() => {
+                showToast(isEdit ? "อัปเดตแก้ไขข้อมูลเรียบร้อย!" : "บันทึกข้อมูลเข้า Google Sheets เรียบร้อย!", "success");
+                submitBtn.disabled = false;
+                resetForm();
+                switchTab('records');
+                fetchCentralRecords(false);
+            }, 2000);
+        }
+
+        function editRecord(id) {
+            const r = records.find(item => item.id === id);
+            if(!r) return;
+
+            document.getElementById('edit-id').value = r.id;
+            document.getElementById('staff-name').value = r.staffName || '';
+            document.getElementById('staff-area').value = r.staffArea || '';
+            document.getElementById('assessment-date').value = r.assessmentDate || '';
+            document.getElementById('patient-name').value = r.patientName || '';
+            document.getElementById('patient-cid').value = r.patientCid || '';
+            document.getElementById('patient-phone').value = r.patientPhone || '';
+
+            let scores = [];
+            try {
+                scores = typeof r.adlScores === 'string' ? JSON.parse(r.adlScores) : r.adlScores;
+            } catch(e) { scores = []; }
+
+            if(Array.isArray(scores)) {
+                for(let i=1; i<=10; i++) {
+                    const radios = document.getElementsByName(`adl_${i}`);
+                    for(let radio of radios) {
+                        if(parseInt(radio.value) === parseInt(scores[i-1])) {
+                            radio.checked = true;
+                        }
+                    }
+                }
+            }
+
+            calculateADL();
+
+            document.getElementById('form-mode-badge').textContent = 'โหมดแก้ไขข้อมูล';
+            document.getElementById('form-mode-badge').className = 'bg-amber-100 text-amber-900 text-xs px-3 py-1 rounded-full font-extrabold';
+            document.getElementById('submit-btn-text').textContent = 'อัปเดตการแก้ไขข้อมูล';
+            document.getElementById('submit-btn').className = 'bg-amber-600 hover:bg-amber-700 text-white px-7 py-3 rounded-xl text-base font-extrabold shadow-lg transition flex items-center gap-2 cursor-pointer';
+
+            switchTab('assessment');
+            showToast("ดึงข้อมูลมาเรียบร้อยแล้ว สามารถแก้ไขและกดอัปเดตได้เลย", "success");
+        }
+
+        function deleteRecord(id, patientName) {
+            if(!confirm(`คุณต้องการลบข้อมูลการประเมินของ "${patientName}" ออกจากฐานข้อมูลใช่หรือไม่?`)) return;
+
+            showToast("กำลังลบข้อมูลออกจาก Google Sheets...", "success");
+
+            let iframe = document.getElementById('hidden_submit_iframe');
+            if(!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'hidden_submit_iframe';
+                iframe.name = 'hidden_submit_iframe';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = gasUrl;
+            form.target = 'hidden_submit_iframe';
+
+            const inputAction = document.createElement('input');
+            inputAction.type = 'hidden';
+            inputAction.name = 'action';
+            inputAction.value = 'delete';
+            form.appendChild(inputAction);
+
+            const inputId = document.createElement('input');
+            inputId.type = 'hidden';
+            inputId.name = 'id';
+            inputId.value = id;
+            form.appendChild(inputId);
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            setTimeout(() => {
+                showToast("ลบข้อมูลออกจาก Google Sheets เรียบร้อยแล้ว", "success");
+                fetchCentralRecords(false);
+            }, 2000);
         }
 
         function resetForm() {
@@ -541,9 +601,15 @@
             document.getElementById('preview-total-score').textContent = '0';
             for(let i=1; i<=10; i++) document.getElementById(`score-val-${i}`).textContent = '0 คะแนน';
             document.getElementById('assessment-date').value = new Date().toISOString().split('T')[0];
+
+            document.getElementById('form-mode-badge').textContent = 'แบบประเมินมาตรฐาน';
+            document.getElementById('form-mode-badge').className = 'bg-emerald-100 text-emerald-900 text-xs px-3 py-1 rounded-full font-extrabold';
+            document.getElementById('submit-btn-text').textContent = 'บันทึกข้อมูลขึ้น Google Sheets กลาง';
+            document.getElementById('submit-btn').className = 'bg-emerald-700 hover:bg-emerald-800 text-white px-7 py-3 rounded-xl text-base font-extrabold shadow-lg transition flex items-center gap-2 cursor-pointer';
         }
 
         function loadSampleData() {
+            resetForm();
             document.getElementById('staff-name').value = "นส.กุศล อสม.";
             document.getElementById('staff-area').value = "หมู่ 3 รพ.สต.บ้านหนองผักชี";
             document.getElementById('patient-name').value = "นายบุญมี ศรีสุข";
@@ -585,7 +651,13 @@
                             <td class="py-3 px-3"><div>${r.staffName}</div><div class="text-[10px] text-slate-400">${r.staffArea}</div></td>
                             <td class="py-3 px-3 text-center font-extrabold text-teal-800">${r.totalScore}/20</td>
                             <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${g.badge}">${r.ltcGroup}</span></td>
-                            <td class="py-3 px-3 text-right"><button type="button" onclick="printRecord('${r.id}')" class="bg-teal-600 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-print"></i></button></td>
+                            <td class="py-3 px-3 text-center">
+                                <div class="flex justify-center gap-1.5">
+                                    <button type="button" onclick="editRecord('${r.id}')" title="แก้ไข" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button type="button" onclick="printRecord('${r.id}')" title="พิมพ์" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-print"></i></button>
+                                    <button type="button" onclick="deleteRecord('${r.id}', '${r.patientName}')" title="ลบ" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </td>
                         </tr>
                     `;
                 }).join('');
