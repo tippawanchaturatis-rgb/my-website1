@@ -360,6 +360,31 @@
 
             initPieChart();
             fetchCentralRecords(false);
+
+            // Event Delegation สำหรับปุ่มแก้ไขและลบ รองรับมือถือและคอมพิวเตอร์อย่างสมบูรณ์
+            document.getElementById('records-tbody').addEventListener('click', function(e) {
+                const editBtn = e.target.closest('.btn-edit');
+                if (editBtn) {
+                    const id = editBtn.getAttribute('data-id');
+                    editRecord(id);
+                    return;
+                }
+
+                const deleteBtn = e.target.closest('.btn-delete');
+                if (deleteBtn) {
+                    const id = deleteBtn.getAttribute('data-id');
+                    const name = deleteBtn.getAttribute('data-name');
+                    deleteRecord(id, name);
+                    return;
+                }
+
+                const printBtn = e.target.closest('.btn-print');
+                if (printBtn) {
+                    const id = printBtn.getAttribute('data-id');
+                    printRecord(id);
+                    return;
+                }
+            });
         });
 
         function showToast(msg, type='success') {
@@ -519,7 +544,7 @@
             }, 1000);
         }
 
-        // ปรับปรุงฟังก์ชันแก้ไขข้อมูลให้รองรับทั้งคอมพิวเตอร์และมือถือ 100%
+        // ฟังก์ชันแก้ไขข้อมูลรองรับ Data Attribute บนมือถือ
         function editRecord(id) {
             const cleanId = String(id || '').trim();
             const r = records.find(item => String(item.id || '').trim() === cleanId);
@@ -669,9 +694,9 @@
                             <td class="py-3 px-2 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${g.badge}">${r.ltcGroup}</span></td>
                             <td class="py-3 px-2 text-center">
                                 <div class="flex justify-center gap-1">
-                                    <button type="button" onclick="editRecord('${safeId}')" title="แก้ไข" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow cursor-pointer active:scale-95"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-                                    <button type="button" onclick="printRecord('${safeId}')" title="พิมพ์" class="bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1.5 rounded-lg text-xs shadow cursor-pointer"><i class="fa-solid fa-print"></i></button>
-                                    <button type="button" onclick="deleteRecord('${safeId}', '${safeName}')" title="ลบ" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs shadow cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                                    <button type="button" data-id="${safeId}" title="แก้ไข" class="btn-edit bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow cursor-pointer active:scale-95"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
+                                    <button type="button" data-id="${safeId}" title="พิมพ์" class="btn-print bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1.5 rounded-lg text-xs shadow cursor-pointer"><i class="fa-solid fa-print"></i></button>
+                                    <button type="button" data-id="${safeId}" data-name="${safeName}" title="ลบ" class="btn-delete bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs shadow cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
                             </td>
                         </tr>
